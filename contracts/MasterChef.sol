@@ -1191,7 +1191,7 @@ contract OboToken is BEP20('OboSwap', 'OBOS') {
 }
 
 // SyrupBar with Governance.
-contract SyrupBar is BEP20('SyrupBar Token', 'SYRUP') {
+contract SyrupBar is BEP20('OBOSyrup Token', 'OBOSYRUP') {
     /// @notice Creates `_amount` token to `_to`. Must only be called by the owner (MasterChef).
     function mint(address _to, uint256 _amount) public onlyOwner {
         _mint(_to, _amount);
