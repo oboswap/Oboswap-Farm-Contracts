@@ -1,4 +1,4 @@
-
+  
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.6.12;
@@ -856,7 +856,7 @@ contract BEP20 is Context, IBEP20, Ownable {
 }
 
 // OboswapToken with Governance.
-contract OboToken is BEP20('OboSwap', 'OBOS') {
+contract ObosToken is BEP20('OboSwap', 'OBOS') {
     /// @notice Creates `_amount` token to `_to`. Must only be called by the owner (MasterChef).
     function mint(address _to, uint256 _amount) public onlyOwner {
         _mint(_to, _amount);

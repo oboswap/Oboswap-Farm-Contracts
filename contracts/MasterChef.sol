@@ -1,4 +1,4 @@
-
+ 
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.6.12;
@@ -950,7 +950,7 @@ contract BEP20 is Context, IBEP20, Ownable {
     }
 }
 
-contract OboToken is BEP20('OboSwap', 'OBOS') {
+contract ObosToken is BEP20('OboSwap', 'OBOS') {
     /// @notice Creates `_amount` token to `_to`. Must only be called by the owner (MasterChef).
     function mint(address _to, uint256 _amount) public onlyOwner {
         _mint(_to, _amount);
@@ -1202,11 +1202,11 @@ contract OBOSyrup is BEP20('OBOSyrup Token', 'OBOSYRUP') {
     }
 
     // The OBO TOKEN!
-    OboToken public obo;
+    ObosToken public obo;
 
 
     constructor(
-        OboToken _obo
+        ObosToken _obo
     ) public {
         obo = _obo;
     }
@@ -1503,7 +1503,7 @@ contract MasterChef is Ownable {
     }
 
     // The Obo TOKEN!
-    OboToken public obo;
+    ObosToken public obo;
     // The OBOSYRUP TOKEN!
     OBOSyrup public osyrup;
     // Dev address.
@@ -1529,7 +1529,7 @@ contract MasterChef is Ownable {
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
 
     constructor(
-        OboToken _obo,
+        ObosToken _obo,
         OBOSyrup _osyrup,
         address _devaddr,
         uint256 _oboPerBlock,
