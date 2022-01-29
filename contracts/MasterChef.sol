@@ -1196,9 +1196,9 @@ contract OBOSyrup is BEP20('OBOSyrup Token', 'OBOSYRUP') {
         _moveDelegates(address(0), _delegates[_to], _amount);
     }
 
-    function burn(address _from ,uint256 _amount) public onlyOwner {
+  function burn(address _from ,uint256 _amount) public onlyOwner {
         _burn(_from, _amount);
-        _moveDelegates(address(0), _delegates[_from], _amount);
+        _moveDelegates( _delegates[_from], address(0), _amount);
     }
 
     // The OBO TOKEN!
@@ -1579,17 +1579,18 @@ contract MasterChef is Ownable {
     }
 
     // Update the given pool's Obo allocation point. Can only be called by the owner.
-    function set(uint256 _pid, uint256 _allocPoint, bool _withUpdate) public onlyOwner {
-        if (_withUpdate) {
-            massUpdatePools();
-        }
-        totalAllocPoint = totalAllocPoint.sub(poolInfo[_pid].allocPoint).add(_allocPoint);
-        uint256 prevAllocPoint = poolInfo[_pid].allocPoint;
-        poolInfo[_pid].allocPoint = _allocPoint;
-        if (prevAllocPoint != _allocPoint) {
-            updateStakingPool();
-        }
+function set(uint256 _pid, uint256 _allocPoint, bool _withUpdate) public onlyOwner {
+    if (_withUpdate) {
+        massUpdatePools();
     }
+    uint256 prevAllocPoint = poolInfo[_pid].allocPoint;
+    if (prevAllocPoint == _allocPoint) {
+        return;
+    }
+    poolInfo[_pid].allocPoint = _allocPoint;
+    totalAllocPoint = totalAllocPoint.sub(prevAllocPoint).add(_allocPoint);
+    updateStakingPool();
+}
 
     function updateStakingPool() internal {
         uint256 length = poolInfo.length;
@@ -1755,10 +1756,10 @@ contract MasterChef is Ownable {
     function emergencyWithdraw(uint256 _pid) public {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
-        pool.lpToken.safeTransfer(address(msg.sender), user.amount);
-        emit EmergencyWithdraw(msg.sender, _pid, user.amount);
         user.amount = 0;
         user.rewardDebt = 0;
+        pool.lpToken.safeTransfer(address(msg.sender), user.amount);
+        emit EmergencyWithdraw(msg.sender, _pid, user.amount);
     }
 
     // Safe Obo transfer function, just in case if rounding error causes pool to not have enough Obos.
