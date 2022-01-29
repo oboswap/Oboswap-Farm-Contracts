@@ -1,6 +1,4 @@
-/**
- *Submitted for verification at BscScan.com on 2020-09-22
-*/
+ 
 // SPDX-License-Identifier: MIT
 
 pragma solidity 0.6.12;
@@ -952,7 +950,7 @@ contract BEP20 is Context, IBEP20, Ownable {
     }
 }
 
-contract OboToken is BEP20('OboSwap', 'OBOS') {
+contract ObosToken is BEP20('OboSwap', 'OBOS') {
     /// @notice Creates `_amount` token to `_to`. Must only be called by the owner (MasterChef).
     function mint(address _to, uint256 _amount) public onlyOwner {
         _mint(_to, _amount);
@@ -1190,25 +1188,25 @@ contract OboToken is BEP20('OboSwap', 'OBOS') {
     }
 }
 
-// SyrupBar with Governance.
-contract SyrupBar is BEP20('SyrupBar Token', 'SYRUP') {
+// OBOSyrup with Governance.
+contract OBOSyrup is BEP20('OBOSyrup Token', 'OBOSYRUP') {
     /// @notice Creates `_amount` token to `_to`. Must only be called by the owner (MasterChef).
     function mint(address _to, uint256 _amount) public onlyOwner {
         _mint(_to, _amount);
         _moveDelegates(address(0), _delegates[_to], _amount);
     }
 
-    function burn(address _from ,uint256 _amount) public onlyOwner {
+  function burn(address _from ,uint256 _amount) public onlyOwner {
         _burn(_from, _amount);
-        _moveDelegates(address(0), _delegates[_from], _amount);
+        _moveDelegates( _delegates[_from], address(0), _amount);
     }
 
     // The OBO TOKEN!
-    OboToken public obo;
+    ObosToken public obo;
 
 
     constructor(
-        OboToken _obo
+        ObosToken _obo
     ) public {
         obo = _obo;
     }
@@ -1505,9 +1503,9 @@ contract MasterChef is Ownable {
     }
 
     // The Obo TOKEN!
-    OboToken public obo;
-    // The SYRUP TOKEN!
-    SyrupBar public syrup;
+    ObosToken public obo;
+    // The OBOSYRUP TOKEN!
+    OBOSyrup public osyrup;
     // Dev address.
     address public devaddr;
     // Obo tokens created per block.
@@ -1531,14 +1529,14 @@ contract MasterChef is Ownable {
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
 
     constructor(
-        OboToken _obo,
-        SyrupBar _syrup,
+        ObosToken _obo,
+        OBOSyrup _osyrup,
         address _devaddr,
         uint256 _oboPerBlock,
         uint256 _startBlock
     ) public {
         obo = _obo;
-        syrup = _syrup;
+        osyrup = _osyrup;
         devaddr = _devaddr;
         oboPerBlock = _oboPerBlock;
         startBlock = _startBlock;
@@ -1581,17 +1579,18 @@ contract MasterChef is Ownable {
     }
 
     // Update the given pool's Obo allocation point. Can only be called by the owner.
-    function set(uint256 _pid, uint256 _allocPoint, bool _withUpdate) public onlyOwner {
-        if (_withUpdate) {
-            massUpdatePools();
-        }
-        totalAllocPoint = totalAllocPoint.sub(poolInfo[_pid].allocPoint).add(_allocPoint);
-        uint256 prevAllocPoint = poolInfo[_pid].allocPoint;
-        poolInfo[_pid].allocPoint = _allocPoint;
-        if (prevAllocPoint != _allocPoint) {
-            updateStakingPool();
-        }
+function set(uint256 _pid, uint256 _allocPoint, bool _withUpdate) public onlyOwner {
+    if (_withUpdate) {
+        massUpdatePools();
     }
+    uint256 prevAllocPoint = poolInfo[_pid].allocPoint;
+    if (prevAllocPoint == _allocPoint) {
+        return;
+    }
+    poolInfo[_pid].allocPoint = _allocPoint;
+    totalAllocPoint = totalAllocPoint.sub(prevAllocPoint).add(_allocPoint);
+    updateStakingPool();
+}
 
     function updateStakingPool() internal {
         uint256 length = poolInfo.length;
@@ -1664,7 +1663,7 @@ contract MasterChef is Ownable {
         uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
         uint256 oboReward = multiplier.mul(oboPerBlock).mul(pool.allocPoint).div(totalAllocPoint);
         obo.mint(devaddr, oboReward.div(10));
-        obo.mint(address(syrup), oboReward);
+        obo.mint(address(osyrup), oboReward);
         pool.accOboPerShare = pool.accOboPerShare.add(oboReward.mul(1e12).div(lpSupply));
         pool.lastRewardBlock = block.number;
     }
@@ -1729,7 +1728,7 @@ contract MasterChef is Ownable {
         }
         user.rewardDebt = user.amount.mul(pool.accOboPerShare).div(1e12);
 
-        syrup.mint(msg.sender, _amount);
+        osyrup.mint(msg.sender, _amount);
         emit Deposit(msg.sender, 0, _amount);
     }
 
@@ -1749,7 +1748,7 @@ contract MasterChef is Ownable {
         }
         user.rewardDebt = user.amount.mul(pool.accOboPerShare).div(1e12);
 
-        syrup.burn(msg.sender, _amount);
+        osyrup.burn(msg.sender, _amount);
         emit Withdraw(msg.sender, 0, _amount);
     }
 
@@ -1757,15 +1756,15 @@ contract MasterChef is Ownable {
     function emergencyWithdraw(uint256 _pid) public {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
-        pool.lpToken.safeTransfer(address(msg.sender), user.amount);
-        emit EmergencyWithdraw(msg.sender, _pid, user.amount);
         user.amount = 0;
         user.rewardDebt = 0;
+        pool.lpToken.safeTransfer(address(msg.sender), user.amount);
+        emit EmergencyWithdraw(msg.sender, _pid, user.amount);
     }
 
     // Safe Obo transfer function, just in case if rounding error causes pool to not have enough Obos.
     function safeOboTransfer(address _to, uint256 _amount) internal {
-        syrup.safeOboTransfer(_to, _amount);
+        osyrup.safeOboTransfer(_to, _amount);
     }
 
     // Update dev address by the previous dev.
